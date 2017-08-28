@@ -1,0 +1,24 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>ScreenAway</title>
+    <link rel="stylesheet" href="style.css" type="text/css">
+  </head>
+  <body>
+
+    <section class="controls">
+      <button id="select-all"> Select All </button>
+      <button id="get-screenshots">Search for screenshots</button>
+      <button id="unselect-all"> Unselect All </button>
+    </section>
+
+    <section class="content">
+      <div class="rendered-html"></div>
+    </section>
+  </body>
+  <script>
+    require('./renderer')
+  </script>
+</html>
