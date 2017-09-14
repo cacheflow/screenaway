@@ -4,21 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>ScreenAway</title>
-    <link rel="stylesheet" href="style.css" type="text/css">
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="css/style.min.css">
   </head>
   <body>
-
-    <section class="controls">
+  <div id="app">
+    
+  </div>
+    <!-- <section class="controls">
       <button id="select-all"> Select All </button>
       <button id="get-screenshots">Search for screenshots</button>
-      <button id="unselect-all"> Unselect All </button>
+      <button class="delete-selected"> Delete All </button>
     </section>
 
     <section class="content">
       <div class="rendered-html"></div>
-    </section>
+    </section> -->
+    <app></app>
   </body>
-  <script>
-    require('./renderer')
-  </script>
+    <script src="build/bundle.js"></script>
+
 </html>
