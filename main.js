@@ -8,6 +8,7 @@ const os = require('os')
 const fs = require('fs')
 const {ipcMain} = require('electron')
 const bytes = require('bytes')
+const deleteScreens = require('./delete-screens')
 
 let mainWindow = null
 
@@ -48,9 +49,6 @@ function getScreens() {
   mainWindow.webContents.send('screenshots-found', screenShots)
 }
 
-
-
-
 app.on('ready', () => {
   mainWindow = new BrowserWindow({height: 600, width: 800, title: 'Screenwipe', frame: false})
   mainWindow.loadURL(`file://${path.join(__dirname, 'index.html')}`)
@@ -61,19 +59,19 @@ app.on('ready', () => {
 
 })
 
-
 app.on('window-all-closed', () => {
   if(process.platform != 'darwin') {
     app.quit()
   }
 })
 
-
-ipcMain.on('screenshots-found', (event, imgs) => {
+ipcMain.on('get-screenshots', (event, imgs) => {
   getScreens()
 })
 
-
-
+ipcMain.on('delete-screens', (event, imgs) => {
+  deleteScreens(imgs)
+  mainWindow.webContents.send('screens-removed')
+})
 
 exports.getScreens = getScreens

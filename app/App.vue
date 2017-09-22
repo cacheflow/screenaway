@@ -2,10 +2,11 @@
 
 <template>
 	<div class="container">
-		<button v-if="imgsToDelete.length" class="get-screenshot-btn"> 
-			Delete images 
-		</button>
-		<div v-if="!dataPresent">
+			<i class="fa fa-trash-o delete-screenshot-btn" 
+				v-if="imgsToDelete.length" 
+		 		v-on:click="deleteSelectedScreens"
+				aria-hidden="true"></i>
+		<div class="get-screenshot-holder">
 			<button v-on:click="getScreenShots" class="get-screenshot-btn"> Get screenshots </button>
 		</div>
 		<div v-if="dataPresent" id="app">
@@ -29,6 +30,8 @@
 
 <script>
 	const ipc = window.require('electron').ipcRenderer
+	const deleteScreens = require('../delete-screens')
+	
 	export default {
 		data() {
 			return {
@@ -44,9 +47,8 @@
 		/* eslint-disable object-shorthand */
 		methods: {
 			getScreenShots: function () {
-				ipc.send('screenshots-found')
+				ipc.send('get-screenshots')
 				ipc.on('screenshots-found', (event, imgs) => {
-					console.log(this)
   				imgs.forEach(img => this.data['images'].push({isActive: false, key: 
   					Math.random().toString(16).slice(2), img}))
 				})
@@ -80,6 +82,15 @@
 
 			changeShowImages: function() {
 				this.showImages = !this.showImages
+			}, 
+
+			deleteSelectedScreens: function() {
+				ipc.send('delete-screens', this.imgsToDelete)
+				ipc.on('screens-removed', (event) => {
+					this.imgsToDelete.length = 0
+					this.data.images.length = 0
+					this.getScreenShots()
+				})
 			}
 
 		}
@@ -94,7 +105,7 @@
 		display: flex;
 		justify-content: center;
 		height: 100%;
-		background: linear-gradient(#74ebd5, #ACB6E5);
+		background: #f9fafa;
 	}
 	.screenshot {
 		width: 100px;
@@ -112,6 +123,12 @@
 		background-color: blue;
 		border: 10px;
 	}
+	.get-screenshot-holder {
+		display: flex;
+    justify-content: center;
+    align-items: center;
+    height: calc(100% - 50px);
+	}
 	#app {
 		display: flex;
     align-items: center;
@@ -124,17 +141,23 @@
 		align-self: center;
 	}
 	.get-screenshot-btn {
-		border-radius: 50%;
-    border: 2px solid white;
-    height: 200px;
-    width: 200px;
+		border-radius: 4px;
+    height: 32px;
     display: flex;
+    border: 2px white solid;
+    padding: 0 30px;
+    text-align: center;
     align-items: center;
+    color: white;
     justify-content: center;
+		background: rgba(21, 149, 210, 0.9);
+	}
+	.delete-screenshot-btn {
+		position: fixed;
+    right: 0px;
+    bottom: 10px;
 	}
 	.circle-container {
-		border-radius: 50%;
-    border: 2px solid white;
     height: 200px;
     width: 200px;
     display: flex;
