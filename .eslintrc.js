@@ -24,7 +24,7 @@ module.exports = {
     // don't require .vue extension when importing
     "semi": 0,
     "comma-dangle": 0,  
-    "indent": [2, "tab"],
+    "indent": [2],
     "no-tabs": 0,
     'import/extensions': ['error', 'always', {
       'js': 'never',

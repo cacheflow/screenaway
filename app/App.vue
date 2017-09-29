@@ -1,25 +1,23 @@
-
-
 <template>
 	<div class="container">
 			<i class="fa fa-trash-o delete-screenshot-btn" 
-				v-if="imgsToDelete.length" 
+				:disabled="!imgsToDelete.length"
 		 		v-on:click="deleteSelectedScreens"
 				aria-hidden="true"></i>
 		<div class="get-screenshot-holder">
-			<button v-on:click="getScreenShots" class="get-screenshot-btn"> Get screenshots </button>
+			<button v-on:click="getScreenshots" class="get-screenshot-btn"> Get screenshots </button>
 		</div>
-		<div v-if="dataPresent" id="app">
-			<h1> 
+		<div v-if="images.length" id="app">
+			<!-- <h1> 
 				{{data.numberOfFiles}} screenshots using {{data.sizeOfFiles}} space
-			</h1>
+			</h1> -->
 			<div class="flexbox-col">
-				<div class="col" v-for="img in this.data.images">
+				<div class="col" v-for="img in images">
 					<img
 						:src="img.img" 
-						v-on:click="getScreenShotSrc"
+						v-on:click="addToDelete(img)"
 						:data-key="img.key"
-						v-bind:class="{active: img.isActive, inActive: !img.isActive}"
+						v-bind:class="{active: img.delete, inActive: !img.delete}"
 						class="screenshot"> 
 					</img>
 				</div>
@@ -29,72 +27,28 @@
 </template>
 
 <script>
-	const ipc = window.require('electron').ipcRenderer
 	const deleteScreens = require('../delete-screens')
-	
+	import { mapGetters, mapActions } from 'vuex'
+
 	export default {
-		data() {
-			return {
-				counter: 0,
-				data: {
-					images: []
-				},
-				showImages: false,
-				dataPresent: false,
-				imgsToDelete: []
-			}
-		},
-		/* eslint-disable object-shorthand */
-		methods: {
-			getScreenShots: function () {
-				ipc.send('get-screenshots')
-				ipc.on('screenshots-found', (event, imgs) => {
-  				imgs.forEach(img => this.data['images'].push({isActive: false, key: 
-  					Math.random().toString(16).slice(2), img}))
-				})
-
-				ipc.on('data', (event, data) => {
-					this.data = Object.assign(this.data, data)
-					this.dataPresent = true
-				})
-			},
-
-			getScreenShotSrc: function(event) {
-				let key = event.target.getAttribute('data-key')
-				const images = this.data['images']
-				let foundImg = images.findIndex(el => el.key == key)	
-				if(foundImg > -1) {
-					images[foundImg].isActive = !images[foundImg].isActive 
-					if(images[foundImg].isActive) {
-						let doesNotExistAlready = this.imgsToDelete.some(i => i.key == images[foundImg].key)
-						if(!doesNotExistAlready) {
-							this.imgsToDelete = this.imgsToDelete.concat(images[foundImg])
-						}
-					}
-					else {
-						let existsAlready = this.imgsToDelete.some(i => i.key == images[foundImg].key)	
-						if(existsAlready) {
-							this.imgsToDelete = this.imgsToDelete.splice(foundImg, 0)
-						}
-					}
-				} 
-			},
-
-			changeShowImages: function() {
-				this.showImages = !this.showImages
-			}, 
-
-			deleteSelectedScreens: function() {
-				ipc.send('delete-screens', this.imgsToDelete)
-				ipc.on('screens-removed', (event) => {
-					this.imgsToDelete.length = 0
-					this.data.images.length = 0
-					this.getScreenShots()
-				})
-			}
-
-		}
-	}
+  computed: { 
+  	...mapGetters([
+    	'images',
+    	'imgsToDelete'
+  	]),
+	},
+  methods: {
+  	...mapActions([
+    	'getScreenshots',
+    	'deleteSelectedScreens'
+  	]),
+  	addToDelete (img) {
+  		this.$store.dispatch('addToDelete', 
+  		 img
+  		)
+  	}
+  }
+}
 </script>
 
 <style>
@@ -120,8 +74,7 @@
 		width: 30%;
 	}
 	.flexbox-col .col .active {
-		background-color: blue;
-		border: 10px;
+		border: 10px solid red;
 	}
 	.get-screenshot-holder {
 		display: flex;
@@ -156,6 +109,7 @@
 		position: fixed;
     right: 0px;
     bottom: 10px;
+    font-size: 100px;	
 	}
 	.circle-container {
     height: 200px;

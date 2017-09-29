@@ -45,10 +45,6 @@ function attachSelectAllButton() {
   })
 }
 
-function showImages (imgs) {
-  console.log(imgs)
-}
-
 screenshotBtn.addEventListener('click', () => {
   mainProcess.getScreens()
 })

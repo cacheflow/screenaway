@@ -41,12 +41,11 @@ function getScreens() {
     let fileSizeInBytes = stats['size'] 
     return fileSizeInBytes
   })
-  let sizeOfFiles = bytes(data.reduce((acc, curr) => {
+  let sizeOfScreenShots = bytes(data.reduce((acc, curr) => {
     return acc + curr
   }, 0))
-  let screenshotStats = {sizeOfFiles, numberOfFiles: data.length}
-  mainWindow.webContents.send('data', screenshotStats)
-  mainWindow.webContents.send('screenshots-found', screenShots)
+  let screenshotStats = {sizeOfScreenShots, numberOfScreenShots: data.length, screenShots}
+  mainWindow.webContents.send('screenshots-found', screenshotStats)
 }
 
 app.on('ready', () => {

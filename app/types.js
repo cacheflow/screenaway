@@ -1,0 +1,3 @@
+export const ADD_IMAGES = "ADD_IMAGES"
+export const MARK_TO_DELETE = 'MARK_TO_DELETE'
+export const DELETE_IMAGES = 'DELETE_IMAGES'
