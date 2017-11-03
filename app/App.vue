@@ -4,14 +4,18 @@
 				:disabled="!imgsToDelete.length"
 		 		v-on:click="deleteSelectedScreens"
 				aria-hidden="true"></i>
+			<div class="help-msg" v-if="imgsToDelete.length"> 
+				{{msg}} 
+			</div>
 		<div class="get-screenshot-holder">
 			<button v-on:click="getScreenshots" class="get-screenshot-btn"> Get screenshots </button>
 		</div>
 		<div v-if="images.length" id="app">
-			<!-- <h1> 
-				{{data.numberOfFiles}} screenshots using {{data.sizeOfFiles}} space
-			</h1> -->
+			<h1> 
+				{{numberOfScreenShots}} screenshots using {{sizeOfScreenShots}} space
+			</h1>
 			<div class="flexbox-col">
+        <button v-on:click="markAllAsDelete" class="mark-all-as-delete"> {{markAllAsDeleteText}} </button>
 				<div class="col" v-for="img in images">
 					<img
 						:src="img.img" 
@@ -27,26 +31,37 @@
 </template>
 
 <script>
-	const deleteScreens = require('../delete-screens')
 	import { mapGetters, mapActions } from 'vuex'
-
-	export default {
-  computed: { 
-  	...mapGetters([
-    	'images',
-    	'imgsToDelete'
-  	]),
-	},
+  export default {
+  	data: function() {
+  		return {
+  			msg: '',
+  		}
+  	},
+    computed: { 
+    ...mapGetters([
+      'images',
+      'imgsToDelete',
+      'numberOfScreenShots',
+      'markAllAsDeleteText',
+      'sizeOfScreenShots'
+    ])
+  },
   methods: {
-  	...mapActions([
-    	'getScreenshots',
-    	'deleteSelectedScreens'
-  	]),
-  	addToDelete (img) {
-  		this.$store.dispatch('addToDelete', 
-  		 img
-  		)
-  	}
+  	showMsg: function() {
+    	if(imgsToDelete.length >= 1) {
+    		msg = `${imgsToDelete}.length selected.`
+    	}
+    	else {
+    		msg = 'Click on screenshot to select.'
+    	}
+    },
+    ...mapActions([
+      'getScreenshots',
+      'deleteSelectedScreens',
+      'markAllAsDelete',
+      'addToDelete'
+    ])
   }
 }
 </script>
@@ -60,6 +75,16 @@
 		justify-content: center;
 		height: 100%;
 		background: #f9fafa;
+	}
+	.help-msg {
+		color: white;
+    background-color: #bdc3c7;
+    width: 100%;
+    left: 50%;
+    text-align: center;
+    transform: translateX(-50%);
+    position: absolute;
+    bottom: 1px;
 	}
 	.screenshot {
 		width: 100px;
@@ -93,7 +118,7 @@
 	button {
 		align-self: center;
 	}
-	.get-screenshot-btn {
+	.get-screenshot-btn, .mark-all-as-delete {
 		border-radius: 4px;
     height: 32px;
     display: flex;

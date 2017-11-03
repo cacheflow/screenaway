@@ -9,7 +9,10 @@ Vue.use(Vuex)
 const state = {
   images: [],
   numberOfScreenShots: '',
-  sizeOfScreenShots: ''
+  sizeOfScreenShots: '',
+  showLoadingGif: false,
+  markAllAsDeleteText: "Select All To Delete",
+  selectAllScreenShots: false, 
 }
 
 const mutations = {
@@ -32,23 +35,53 @@ const mutations = {
     state.images = arr
   },
 
+
+  [types.MARK_ALL_AS_DELETE] (state) {
+    let copyOfImages = state.images.slice()
+    copyOfImages.forEach(img => img.delete = !img.delete)
+    state.images = copyOfImages
+  },
+
+  [types.SHOW_LOADING_GIF] (state) {
+    state.showLoadingGif = !state.showLoadingGif
+  },
+
    [types.DELETE_IMAGES] (state) {
     const imgsToDelete = state.images.filter(img => img.delete === true)
     if(imgsToDelete.length) {
       ipc.send('delete-screens', imgsToDelete)
     }
+  },
+
+  [types.ADD_NUMBER_OF_SCREENSHOTS] (state, {numberOfScreenShots}) {
+    state.numberOfScreenShots = numberOfScreenShots
+  },
+
+  [types.ADD_SIZE_OF_SCREENSHOTS] (state, {sizeOfScreenShots}) {
+    state.sizeOfScreenShots = sizeOfScreenShots
+  },
+
+  [types.CHANGE_MARK_AS_DELETE_TEXT] (state) {
+    if(state.markAllAsDeleteText == 'Select All To Delete') {
+      state.markAllAsDeleteText = 'Unselect all'
+    }
+    else {
+      state.markAllAsDeleteText = 'Select All to Delete'
+    }
+   
   }
 }
 
 const actions = {
   getScreenshots({ commit }) {
+    commit(types.SHOW_LOADING_GIF)
     ipc.send('get-screenshots')
-    ipc.on('screenshots-found', (event, data) => {
-      commit(types.ADD_IMAGES, { images: data.screenShots, 
-        numberOfScreenShots: data.screenShots, 
-        sizeOfScreenShots: data.sizeOfScreenShots,
-       })
-    })
+    getScreenShotData(commit)
+  },
+
+  markAllAsDelete({commit}) {
+    commit(types.MARK_ALL_AS_DELETE)
+    commit(types.CHANGE_MARK_AS_DELETE_TEXT)
   },
 
   deleteSelectedScreens({commit}) {
@@ -64,9 +97,19 @@ const actions = {
   }
 }
 
+function getScreenShotData(commit) {
+  ipc.on('screenshots-found', (event, data) => {
+    commit(types.ADD_IMAGES, { images: data.screenShots })
+    commit(types.ADD_NUMBER_OF_SCREENSHOTS, {numberOfScreenShots: data.numberOfScreenShots})
+    commit(types.ADD_SIZE_OF_SCREENSHOTS, {sizeOfScreenShots: data.sizeOfScreenShots})
+  })
+  ipc.removeListener('screenshots-found', getScreenShotData)
+}
 
 const getters = {
   images: state => state.images,
+  showLoadingGif: state => state.showLoadingGif,
+  markAllAsDeleteText: state => state.markAllAsDeleteText,
   numberOfScreenShots: state => state.numberOfScreenShots,
   sizeOfScreenShots: state => state.sizeOfScreenShots,
   imgsToDelete: state => {

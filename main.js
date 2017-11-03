@@ -44,7 +44,7 @@ function getScreens() {
   let sizeOfScreenShots = bytes(data.reduce((acc, curr) => {
     return acc + curr
   }, 0))
-  let screenshotStats = {sizeOfScreenShots, numberOfScreenShots: data.length, screenShots}
+  let screenshotStats = {numberOfScreenShots: data.length, sizeOfScreenShots, screenShots}
   mainWindow.webContents.send('screenshots-found', screenshotStats)
 }
 
@@ -64,13 +64,25 @@ app.on('window-all-closed', () => {
   }
 })
 
-ipcMain.on('get-screenshots', (event, imgs) => {
-  getScreens()
-})
+function getScreenListener() {
+  ipcMain.on('get-screenshots', (event, imgs) => {
+    getScreens()
+  })
+}
 
-ipcMain.on('delete-screens', (event, imgs) => {
-  deleteScreens(imgs)
-  mainWindow.webContents.send('screens-removed')
-})
+function deleteScreenListener() {
+  ipcMain.on('delete-screens', (event, imgs) => {
+    deleteScreens(imgs)
+    mainWindow.webContents.send('screens-removed')
+  })
+}
+
+getScreenListener()
+deleteScreenListener()
+
+const cleanUpListeners = () => {
+  ipcMain.removeListener('get-screenshots', getScreenListener)
+  ipcMain.removeListener('delete-screens', deleteScreenListener)
+}
 
 exports.getScreens = getScreens
