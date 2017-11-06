@@ -87,9 +87,11 @@ const actions = {
   deleteSelectedScreens({commit}) {
     commit(types.DELETE_IMAGES)
     const dispatch = this.dispatch
-    ipc.on('screens-removed', (event) => {
-      dispatch('getScreenshots')
-    })
+    if(!ipc.listeners('screens-removed').length) {
+      ipc.on('screens-removed', (event) => {
+        dispatch('getScreenshots')
+      })
+    }
   },
 
   addToDelete({commit}, img) {
@@ -97,13 +99,20 @@ const actions = {
   }
 }
 
+const map = {
+  screenShotFoundEventExists: () => ipc.listeners('screenshots-found').length,
+  screenShotRemovedEventExists: () => ipc.listeners('screens-removed').length
+}
+
 function getScreenShotData(commit) {
-  ipc.on('screenshots-found', (event, data) => {
-    commit(types.ADD_IMAGES, { images: data.screenShots })
-    commit(types.ADD_NUMBER_OF_SCREENSHOTS, {numberOfScreenShots: data.numberOfScreenShots})
-    commit(types.ADD_SIZE_OF_SCREENSHOTS, {sizeOfScreenShots: data.sizeOfScreenShots})
-  })
-  ipc.removeListener('screenshots-found', getScreenShotData)
+  const screenShotEventPresent = ipc.listeners('screenshots-found').length > 0 ? true : false 
+  if(!ipc.listeners('screenshots-found').length) {
+    ipc.on('screenshots-found', (event, data) => {
+      commit(types.ADD_IMAGES, { images: data.screenShots })
+      commit(types.ADD_NUMBER_OF_SCREENSHOTS, {numberOfScreenShots: data.numberOfScreenShots})
+      commit(types.ADD_SIZE_OF_SCREENSHOTS, {sizeOfScreenShots: data.sizeOfScreenShots})
+    })
+  }
 }
 
 const getters = {
