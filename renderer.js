@@ -6,14 +6,16 @@ const screenshotBtn = $('#get-screenshots')
 const remote = electron.remote
 const mainProcess = remote.require('./main')
 const screenShotImg = $('.screenshot')
-const deleteAll = $('#select-all')
-const unSelectAll = $('#select-all')
+const selectAll = $('#select-all')
+const deleteSelected = $('.delete-selected')
+const deleteScreens = require('./delete-screens')
+
 
 let currentFile = null
 
 function renderImgsToHTML (imgs) {
 	let newImgs = []
-  if(htmlView.children.length >= 0) {
+  if(htmlView.children.length >= 1) {
     while(htmlView.firstChild) {
       htmlView.removeChild(htmlView.firstChild)
     }
@@ -31,38 +33,35 @@ function renderImgsToHTML (imgs) {
       el.classList.toggle('active')
     })
   })
+  attachSelectAllButton()
 }
 
-
-function showImages (imgs) {
-  console.log(imgs)
+function attachSelectAllButton() {
+  selectAll.addEventListener('click', () => {
+    let screenshotsInDom = document.querySelectorAll('.screenshot')
+    for(var i = 0; i < 2; i++) {
+      screenshotsInDom[i].classList.toggle('active')
+    }
+  })
 }
 
 screenshotBtn.addEventListener('click', () => {
   mainProcess.getScreens()
 })
 
-deleteAll.addEventListener('click', () => {
+
+
+deleteSelected.addEventListener('click', () => {
   let screenshotsInDom = document.querySelectorAll('.screenshot')
-  Array.from(screenshotsInDom).forEach((s) => {
+  let screens = Array.from(screenshotsInDom).filter((s) => {
     if(s.classList.contains('active')) {
-      s = s.classList.filter(f != 'active')
+      return s
     }
-    s.classList.toggle('active')
-  })
-})
-
-unSelectAll.addEventListener('click', () => {
-  let screenshotsInDom = document.querySelectorAll('.screenshot')
-  Array.from(screenshotsInDom).forEach((s) => {
-    if(s.classList.contains('active')) {
-      s.classList.remove('active')
-    }
-  })
+  }).map(s => s.getAttribute('src'))
+  deleteScreens(screens)
+  mainProcess.getScreens()
 })
 
 
 
-ipc.on('screenshots-found', (event, imgs) => {
-  renderImgsToHTML(imgs)
-})
+
