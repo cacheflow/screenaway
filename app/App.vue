@@ -1,49 +1,72 @@
 <template>
-	<div class="container">
-			<i class="fa fa-trash-o delete-screenshot-btn" 
-				:disabled="!imgsToDelete.length"
-		 		v-on:click="deleteSelectedScreens"
-				aria-hidden="true"></i>
-			<div class="help-msg" v-if="imgsToDelete.length"> 
-				{{msg}} 
-			</div>
-		<div class="get-screenshot-holder">
-			<button v-on:click="getScreenshots" class="get-screenshot-btn"> Get screenshots </button>
-		</div>
-		<div v-if="images.length" id="app">
-			<h1> 
-				{{numberOfScreenShots}} screenshots using {{sizeOfScreenShots}} space
-			</h1>
-			<div class="flexbox-col">
-        <button v-on:click="markAllAsDelete" class="mark-all-as-delete"> {{markAllAsDeleteText}} </button>
-				<div class="col" v-for="img in images">
-					<img
-						:src="img.img" 
-						v-on:click="addToDelete(img)"
-						:data-key="img.key"
-						v-bind:class="{active: img.delete, inActive: !img.delete}"
-						class="screenshot"> 
-					</img>
-				</div>
-			</div>
-		</div>
-	</div>
+    <div>
+    <screenshotbutton
+     :getScreenshots="getScreenshots"
+     :showScreenshotNotFoundText="showScreenshotNotFoundText"
+    >
+    </screenshotbutton>
+    <div class="help-msg" v-if="imgsToDelete.length">
+      {{msg}}
+    </div>
+    <div class="sub-container">
+      <section class="blog-post-wrap medium-padding80">
+        <div v-if="images.length" id="app">
+          <button v-on:click="markAllAsDelete" class="mark-all-as-delete"> {{selectAllScreenShots ? 'Unselect All' : 'Select All To Delete'}} </button>
+           <h1>
+            {{numberOfScreenShots}} screenshots using {{sizeOfScreenShots}} space
+          </h1>
+          <div v-if="selectAllScreenShots">
+            <button v-on:click="deleteAllScreenShots" class="mark-all-as-delete"> Delete all screenshots </button>
+          </div>
+        </div>
+        <div class="container">
+          <div class="row sorting-container" id="posts-grid-1" data-layout="masonry">
+            <div class="col-xl-4 col-lg-4 col-md-6 col-sm-12 col-xs-12 sorting-item community" v-for="img in images">
+                <div class="ui-block">
+                  <article class="hentry blog-post blog-post-v2">
+                    <div class="post-thumb">
+                      <img
+                        :src="img.img"
+                        :data-key="img.key"
+                        v-bind:class="{active: img.delete, inActive: !img.delete}"
+                        class="screenshot">
+                      </img>
+                      <i class="fa fa-trash-o delete-screenshot-btn"
+                        v-on:click="deleteSelectedScreenShot(img.key)"
+                        aria-hidden="true">
+                      </i>
+                    </div>
+                  </article>
+                </div>
+              </div>
+            </div>
+          </div>
+      </section> 
+    </div>
+  </div>
 </template>
 
 <script>
 	import { mapGetters, mapActions } from 'vuex'
+  import Screenshotbutton from './Screenshotbutton.vue'
+
+
   export default {
+    components: {
+      Screenshotbutton
+    },
   	data: function() {
   		return {
   			msg: '',
   		}
   	},
-    computed: { 
+    computed: {
     ...mapGetters([
       'images',
       'imgsToDelete',
       'numberOfScreenShots',
-      'markAllAsDeleteText',
+      'showScreenshotNotFoundText',
+      'selectAllScreenShots',
       'sizeOfScreenShots'
     ])
   },
@@ -58,67 +81,33 @@
     },
     ...mapActions([
       'getScreenshots',
-      'deleteSelectedScreens',
-      'markAllAsDelete',
-      'addToDelete'
+      'deleteAllScreenShots',
+      'deleteSelectedScreenShot',
+      'markAllAsDelete'
     ])
   }
 }
 </script>
 
 <style>
-	html {
-		height: 100%;
-	}
-	body {
-		display: flex;
-		justify-content: center;
-		height: 100%;
-		background: #f9fafa;
-	}
-	.help-msg {
-		color: white;
-    background-color: #bdc3c7;
-    width: 100%;
-    left: 50%;
-    text-align: center;
-    transform: translateX(-50%);
-    position: absolute;
-    bottom: 1px;
-	}
-	.screenshot {
-		width: 100px;
-		height: 100px;
-	}
-	.flexbox-col {
-		display: flex; 
-		justify-content: space-between;
-		flex-wrap: wrap;
-	}
-	.flexbox-col .col {
-		width: 30%;
-	}
-	.flexbox-col .col .active {
-		border: 10px solid red;
-	}
-	.get-screenshot-holder {
-		display: flex;
-    justify-content: center;
+  #app {
+    display: flex;
     align-items: center;
-    height: calc(100% - 50px);
-	}
-	#app {
-		display: flex;
-    align-items: center;
-    justify-content: center;
     flex-direction: column;
-		font-family: Helvetica, sans-serif;
-		display: flex;
-	}
+  }
+  h1 {
+    font-size: 40px;
+    margin-top: 100px;
+  }
 	button {
 		align-self: center;
 	}
-	.get-screenshot-btn, .mark-all-as-delete {
+  .sub-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+	.mark-all-as-delete {
 		border-radius: 4px;
     height: 32px;
     display: flex;
@@ -131,28 +120,8 @@
 		background: rgba(21, 149, 210, 0.9);
 	}
 	.delete-screenshot-btn {
-		position: fixed;
-    right: 0px;
-    bottom: 10px;
-    font-size: 100px;	
+    font-size: 20px;
+    color: black;
 	}
-	.circle-container {
-    height: 200px;
-    width: 200px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
 
-	}
-	p {
-		color: white;
-	}
-	
-	.container {
-		/*overflow-y: scroll;*/
-	}
-	.logo {
-		width: 100px;
-		height: 100px
-	}
 </style>

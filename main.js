@@ -19,7 +19,7 @@ let screenShotInFName = (fname) => {
       while(nameToSearchAgainst[i] != fname[j]) {
           j++
           if(j == fname.length) {
-              return false 
+              return false
           }
       }
     }
@@ -27,7 +27,7 @@ let screenShotInFName = (fname) => {
 }
 
 function getScreens() {
-  let foldersToCheck = ['Documents', 'Desktop', 'Downloads', 'Pictures']
+  let foldersToCheck = ['Documents', 'Desktop', 'Pictures', 'Downloads']
     .map(f => path.resolve(os.userInfo().homedir, f))
   let allFiles = []
   foldersToCheck.forEach((screenDir) => {
@@ -36,9 +36,9 @@ function getScreens() {
     })
   })
   let screenShots = allFiles.filter(f => screenShotInFName(f))
-  let data = screenShots.map((s) => { 
+  let data = screenShots.map((s) => {
     let stats = fs.statSync(s)
-    let fileSizeInBytes = stats['size'] 
+    let fileSizeInBytes = stats['size']
     return fileSizeInBytes
   })
   let sizeOfScreenShots = bytes(data.reduce((acc, curr) => {
@@ -49,7 +49,12 @@ function getScreens() {
 }
 
 app.on('ready', () => {
-  mainWindow = new BrowserWindow({height: 600, width: 800, title: 'Screenwipe', frame: false})
+  mainWindow = new BrowserWindow({height: 600,
+    width: 800,
+    title: 'Screenaway',
+    frame: false,
+    icon: setIcon(os.platform())
+  })
   mainWindow.loadURL(`file://${path.join(__dirname, 'index.html')}`)
   mainWindow.on('closed', () => {
     mainWindow = null
@@ -57,6 +62,17 @@ app.on('ready', () => {
   mainWindow.webContents.openDevTools()
 
 })
+
+function setIcon(platform) {
+  let imgPath = ""
+  if(platform == 'linux' || platform == 'win32') {
+    imgPath = "/Users/lexalexander/Documents/codestuff/screenaway/assets/icons/png/64x64.png"
+  }
+  else {
+    imgPath = "/Users/lexalexander/Documents/codestuff/screenaway/assets/icons/mac/icon.icns"
+  }
+  return imgPath
+}
 
 app.on('window-all-closed', () => {
   if(process.platform != 'darwin') {
@@ -80,9 +96,41 @@ function deleteScreenListener() {
 getScreenListener()
 deleteScreenListener()
 
-const cleanUpListeners = () => {
-  ipcMain.removeListener('get-screenshots', getScreenListener)
-  ipcMain.removeListener('delete-screens', deleteScreenListener)
+function encodeLoader(loader) {
+	if (typeof loader === "string") {
+		return loader;
+	}
+
+	if (typeof loader.options !== "undefined") {
+		const query = Object
+			.keys(loader.options)
+			.map(function map(param) {
+				return `${encodeURIComponent(param)}=${encodeURIComponent(loader.options[param])}`;
+			})
+			.join("&");
+		return `${loader.loader}?${query}`;
+	}
+	return loader.loader;
 }
+
+module.exports = function buildExtractStylesLoader(loaders) {
+	const extractTextLoader = encodeLoader(loaders[0]);
+	const fallbackLoader = encodeLoader(loaders[1]);
+
+	const restLoaders = loaders
+		.slice(2)
+		.map(function map(loader) {
+			if (typeof loader === "string") {
+				return loader;
+			}
+			return encodeLoader(loader);
+		});
+
+	return [
+		extractTextLoader,
+		fallbackLoader,
+		...restLoaders,
+	].join("!");
+};
 
 exports.getScreens = getScreens

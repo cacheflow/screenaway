@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import * as types from './types'
+
 const ipc = window.require('electron').ipcRenderer
 
 
@@ -11,8 +12,8 @@ const state = {
   numberOfScreenShots: '',
   sizeOfScreenShots: '',
   showLoadingGif: false,
-  markAllAsDeleteText: "Select All To Delete",
-  selectAllScreenShots: false, 
+  showScreenshotNotFoundText: false,
+  selectAllScreenShots: false,
 }
 
 const mutations = {
@@ -20,7 +21,7 @@ const mutations = {
     if(state.images.length >= 1) {
       state.images.length = 0
     }
-    images.forEach(img => state.images.push({delete: false, key: 
+    images.forEach(img => state.images.push({delete: false, key:
       Math.random().toString(16).slice(2), img
     }))
   },
@@ -46,12 +47,20 @@ const mutations = {
     state.showLoadingGif = !state.showLoadingGif
   },
 
-   [types.DELETE_IMAGES] (state) {
-    const imgsToDelete = state.images.filter(img => img.delete === true)
+   [types.DELETE_SCREEN_SHOT] (state, {imgToDelete}) {
+    const imgsToDelete = state.images.filter(img => img.key === imgToDelete)
     if(imgsToDelete.length) {
       ipc.send('delete-screens', imgsToDelete)
     }
   },
+
+  [types.DELETE_ALL_SCREEN_SHOTS] (state) {
+    const imgsToDelete = state.images.slice()
+    if(imgsToDelete.length) {
+      ipc.send('delete-screens', imgsToDelete)
+    }
+  },
+
 
   [types.ADD_NUMBER_OF_SCREENSHOTS] (state, {numberOfScreenShots}) {
     state.numberOfScreenShots = numberOfScreenShots
@@ -61,14 +70,12 @@ const mutations = {
     state.sizeOfScreenShots = sizeOfScreenShots
   },
 
-  [types.CHANGE_MARK_AS_DELETE_TEXT] (state) {
-    if(state.markAllAsDeleteText == 'Select All To Delete') {
-      state.markAllAsDeleteText = 'Unselect all'
-    }
-    else {
-      state.markAllAsDeleteText = 'Select All to Delete'
-    }
-   
+  [types.SELECT_ALL_SCREEN_SHOTS] (state) {
+    state.selectAllScreenShots = !state.selectAllScreenShots
+  },
+
+  [types.CHANGE_SCREENSHOT_NOT_FOUND_TEXT] (state, {showScreenshotNotFoundText}) {
+    state.showScreenshotNotFoundText = showScreenshotNotFoundText
   }
 }
 
@@ -81,11 +88,11 @@ const actions = {
 
   markAllAsDelete({commit}) {
     commit(types.MARK_ALL_AS_DELETE)
-    commit(types.CHANGE_MARK_AS_DELETE_TEXT)
+    commit(types.SELECT_ALL_SCREEN_SHOTS)
   },
 
-  deleteSelectedScreens({commit}) {
-    commit(types.DELETE_IMAGES)
+  deleteSelectedScreenShot({commit}, img) {
+    commit(types.DELETE_SCREEN_SHOT, {imgToDelete: img})
     const dispatch = this.dispatch
     if(!ipc.listeners('screens-removed').length) {
       ipc.on('screens-removed', (event) => {
@@ -94,8 +101,14 @@ const actions = {
     }
   },
 
-  addToDelete({commit}, img) {
-    commit(types.MARK_TO_DELETE, {img})
+  deleteAllScreenShots({commit}) {
+    commit(types.DELETE_ALL_SCREEN_SHOTS)
+    const dispatch = this.dispatch
+    if(!ipc.listeners('screens-removed').length) {
+      ipc.on('screens-removed', (event) => {
+        dispatch('getScreenshots')
+      })
+    }
   }
 }
 
@@ -105,9 +118,13 @@ const map = {
 }
 
 function getScreenShotData(commit) {
-  const screenShotEventPresent = ipc.listeners('screenshots-found').length > 0 ? true : false 
+  const screenShotEventPresent = ipc.listeners('screenshots-found').length > 0 ? true : false
   if(!ipc.listeners('screenshots-found').length) {
     ipc.on('screenshots-found', (event, data) => {
+      const updateScreenShotNotFoundBool = data.screenShots.length === 0 ? true : false
+      commit(types.CHANGE_SCREENSHOT_NOT_FOUND_TEXT, {
+        showScreenshotNotFoundText: updateScreenShotNotFoundBool
+      })
       commit(types.ADD_IMAGES, { images: data.screenShots })
       commit(types.ADD_NUMBER_OF_SCREENSHOTS, {numberOfScreenShots: data.numberOfScreenShots})
       commit(types.ADD_SIZE_OF_SCREENSHOTS, {sizeOfScreenShots: data.sizeOfScreenShots})
@@ -118,6 +135,8 @@ function getScreenShotData(commit) {
 const getters = {
   images: state => state.images,
   showLoadingGif: state => state.showLoadingGif,
+  selectAllScreenShots: state => state.selectAllScreenShots,
+  showScreenshotNotFoundText: state => state.showScreenshotNotFoundText,
   markAllAsDeleteText: state => state.markAllAsDeleteText,
   numberOfScreenShots: state => state.numberOfScreenShots,
   sizeOfScreenShots: state => state.sizeOfScreenShots,
@@ -127,8 +146,8 @@ const getters = {
 }
 
 export default new Vuex.Store({
-  state, 
-  getters, 
-  actions, 
+  state,
+  getters,
+  actions,
   mutations
 })
