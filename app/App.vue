@@ -13,7 +13,7 @@
         <div v-if="images.length" id="app">
           <button v-on:click="markAllAsDelete" class="mark-all-as-delete"> {{selectAllScreenShots ? 'Unselect All' : 'Select All To Delete'}} </button>
            <h1>
-            {{numberOfScreenShots}} screenshots using {{sizeOfScreenShots}} space
+            {{numberOfScreenShots}} screenshots using {{sizeOfScreenShots}} of space
           </h1>
           <div v-if="selectAllScreenShots">
             <button v-on:click="deleteAllScreenShots" class="mark-all-as-delete"> Delete all screenshots </button>
@@ -22,13 +22,12 @@
         <div class="container">
           <div class="row sorting-container" id="posts-grid-1" data-layout="masonry">
             <div class="col-xl-4 col-lg-4 col-md-6 col-sm-12 col-xs-12 sorting-item community" v-for="img in images">
-                <div class="ui-block">
+                <div class="ui-block" v-bind:class="{active: img.delete, inActive: !img.delete}">
                   <article class="hentry blog-post blog-post-v2">
                     <div class="post-thumb">
                       <img
                         :src="img.img"
                         :data-key="img.key"
-                        v-bind:class="{active: img.delete, inActive: !img.delete}"
                         class="screenshot">
                       </img>
                       <i class="fa fa-trash-o delete-screenshot-btn"
@@ -47,46 +46,37 @@
 </template>
 
 <script>
-	import { mapGetters, mapActions } from 'vuex'
+  import { mapGetters, mapActions } from 'vuex'
   import Screenshotbutton from './Screenshotbutton.vue'
-
 
   export default {
     components: {
       Screenshotbutton
     },
-  	data: function() {
-  		return {
-  			msg: '',
-  		}
-  	},
-    computed: {
-    ...mapGetters([
-      'images',
-      'imgsToDelete',
-      'numberOfScreenShots',
-      'showScreenshotNotFoundText',
-      'selectAllScreenShots',
-      'sizeOfScreenShots'
-    ])
-  },
-  methods: {
-  	showMsg: function() {
-    	if(imgsToDelete.length >= 1) {
-    		msg = `${imgsToDelete}.length selected.`
-    	}
-    	else {
-    		msg = 'Click on screenshot to select.'
-    	}
+    data: function () {
+      return {
+        msg: '',
+      }
     },
-    ...mapActions([
-      'getScreenshots',
-      'deleteAllScreenShots',
-      'deleteSelectedScreenShot',
-      'markAllAsDelete'
-    ])
+    computed: {
+      ...mapGetters([
+        'images',
+        'imgsToDelete',
+        'numberOfScreenShots',
+        'showScreenshotNotFoundText',
+        'selectAllScreenShots',
+        'sizeOfScreenShots'
+      ])
+    },
+    methods: {
+      ...mapActions([
+        'getScreenshots',
+        'deleteAllScreenShots',
+        'deleteSelectedScreenShot',
+        'markAllAsDelete'
+      ])
+    }
   }
-}
 </script>
 
 <style>
@@ -94,6 +84,14 @@
     display: flex;
     align-items: center;
     flex-direction: column;
+  }
+  .no-screenshots-msg {
+    font-size: 24px;
+    text-align: center;
+  }
+  .ui-block.active {
+    padding: 20px;
+    background-color: #fff6da;
   }
   h1 {
     font-size: 40px;

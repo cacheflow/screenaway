@@ -44,7 +44,7 @@ function getScreens() {
   let sizeOfScreenShots = bytes(data.reduce((acc, curr) => {
     return acc + curr
   }, 0))
-  let screenshotStats = {numberOfScreenShots: data.length, sizeOfScreenShots, screenShots}
+  let screenshotStats = { numberOfScreenShots: data.length, sizeOfScreenShots, screenShots }
   mainWindow.webContents.send('screenshots-found', screenshotStats)
 }
 
@@ -52,15 +52,16 @@ app.on('ready', () => {
   mainWindow = new BrowserWindow({height: 600,
     width: 800,
     title: 'Screenaway',
-    frame: false,
-    icon: setIcon(os.platform())
+    frame: true,
+    icon: setIcon(os.platform()),
+    webPreferences: {
+      devTools: false
+    }
   })
   mainWindow.loadURL(`file://${path.join(__dirname, 'index.html')}`)
   mainWindow.on('closed', () => {
     mainWindow = null
   })
-  mainWindow.webContents.openDevTools()
-
 })
 
 function setIcon(platform) {

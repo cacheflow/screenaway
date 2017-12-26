@@ -4235,6 +4235,7 @@ ol ol li {
   overflow: hidden;
   position: relative; }
   .post-thumb img {
+    max-width: 500px;
     width: 100%; }
 
 .post__author {

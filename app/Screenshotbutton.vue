@@ -1,4 +1,4 @@
-<template> 
+<template>
   <span> 
     <div class="get-screenshot-holder">
       <button v-on:click="getScreenshots" class="get-screenshot-btn"> Get screenshots </button>
@@ -8,7 +8,7 @@
   </span>
 </template>
 
-<script> 
+<script>
   export default {
     name: 'screenshotbutton',
     props: ['getScreenshots', 'showScreenshotNotFoundText']
@@ -28,8 +28,13 @@
     background: rgba(21, 149, 210, 0.9);
   }
   .delete-screenshot-btn {
-    font-size: 20px;
+    font-size: 36px;
     color: black;
+    display: block;
+    transition: color 0.3s ease-in;
+  }
+  .delete-screenshot-btn:hover{
+    color: red;
   }
 
 </style>

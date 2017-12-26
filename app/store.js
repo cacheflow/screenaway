@@ -16,20 +16,34 @@ const state = {
   selectAllScreenShots: false,
 }
 
+function getScreenShotData(commit) {
+  if (!ipc.listeners('screenshots-found').length) {
+    ipc.on('screenshots-found', (event, data) => {
+      const updateScreenShotNotFoundBool = data.screenShots.length === 0 ? true : false
+      commit(types.CHANGE_SCREENSHOT_NOT_FOUND_TEXT, {
+        showScreenshotNotFoundText: updateScreenShotNotFoundBool
+      })
+      commit(types.ADD_IMAGES, { images: data.screenShots })
+      commit(types.ADD_NUMBER_OF_SCREENSHOTS, { numberOfScreenShots: data.numberOfScreenShots })
+      commit(types.ADD_SIZE_OF_SCREENSHOTS, { sizeOfScreenShots: data.sizeOfScreenShots })
+    })
+  }
+}
+
 const mutations = {
-  [types.ADD_IMAGES] (state, {images}) {
-    if(state.images.length >= 1) {
+  [types.ADD_IMAGES] (state, { images }) {
+    if (state.images.length >= 1) {
       state.images.length = 0
     }
-    images.forEach(img => state.images.push({delete: false, key:
-      Math.random().toString(16).slice(2), img
+    images.forEach(img => state.images.push({
+      delete: false,
+      key: Math.random().toString(16).slice(2),
+      img
     }))
   },
 
-  [types.MARK_TO_DELETE] (state, {img}) {
-    let updatedImg = state.images.findIndex((image) => {
-      return image === img
-    })
+  [types.MARK_TO_DELETE] (state, { img }) {
+    const updatedImg = state.images.findIndex(image => image === img)
     let arr = []
     arr = state.images.slice(0)
     arr[updatedImg].delete = !arr[updatedImg].delete
@@ -38,8 +52,10 @@ const mutations = {
 
 
   [types.MARK_ALL_AS_DELETE] (state) {
-    let copyOfImages = state.images.slice()
-    copyOfImages.forEach(img => img.delete = !img.delete)
+    const copyOfImages = state.images.slice()
+    copyOfImages.forEach((img) => {
+      return img.delete = !img.delete
+    })
     state.images = copyOfImages
   },
 
@@ -47,26 +63,26 @@ const mutations = {
     state.showLoadingGif = !state.showLoadingGif
   },
 
-   [types.DELETE_SCREEN_SHOT] (state, {imgToDelete}) {
+  [types.DELETE_SCREEN_SHOT] (state, { imgToDelete }) {
     const imgsToDelete = state.images.filter(img => img.key === imgToDelete)
-    if(imgsToDelete.length) {
+    if (imgsToDelete.length) {
       ipc.send('delete-screens', imgsToDelete)
     }
   },
 
   [types.DELETE_ALL_SCREEN_SHOTS] (state) {
     const imgsToDelete = state.images.slice()
-    if(imgsToDelete.length) {
+    if (imgsToDelete.length) {
       ipc.send('delete-screens', imgsToDelete)
     }
   },
 
 
-  [types.ADD_NUMBER_OF_SCREENSHOTS] (state, {numberOfScreenShots}) {
+  [types.ADD_NUMBER_OF_SCREENSHOTS] (state, { numberOfScreenShots }) {
     state.numberOfScreenShots = numberOfScreenShots
   },
 
-  [types.ADD_SIZE_OF_SCREENSHOTS] (state, {sizeOfScreenShots}) {
+  [types.ADD_SIZE_OF_SCREENSHOTS] (state, { sizeOfScreenShots }) {
     state.sizeOfScreenShots = sizeOfScreenShots
   },
 
@@ -74,7 +90,7 @@ const mutations = {
     state.selectAllScreenShots = !state.selectAllScreenShots
   },
 
-  [types.CHANGE_SCREENSHOT_NOT_FOUND_TEXT] (state, {showScreenshotNotFoundText}) {
+  [types.CHANGE_SCREENSHOT_NOT_FOUND_TEXT] (state, { showScreenshotNotFoundText }) {
     state.showScreenshotNotFoundText = showScreenshotNotFoundText
   }
 }
@@ -86,49 +102,29 @@ const actions = {
     getScreenShotData(commit)
   },
 
-  markAllAsDelete({commit}) {
+  markAllAsDelete({ commit }) {
     commit(types.MARK_ALL_AS_DELETE)
     commit(types.SELECT_ALL_SCREEN_SHOTS)
   },
 
-  deleteSelectedScreenShot({commit}, img) {
-    commit(types.DELETE_SCREEN_SHOT, {imgToDelete: img})
+  deleteSelectedScreenShot({ commit }, img) {
+    commit(types.DELETE_SCREEN_SHOT, { imgToDelete: img })
     const dispatch = this.dispatch
-    if(!ipc.listeners('screens-removed').length) {
-      ipc.on('screens-removed', (event) => {
+    if (!ipc.listeners('screens-removed').length) {
+      ipc.on('screens-removed', () => {
         dispatch('getScreenshots')
       })
     }
   },
 
-  deleteAllScreenShots({commit}) {
+  deleteAllScreenShots({ commit }) {
     commit(types.DELETE_ALL_SCREEN_SHOTS)
     const dispatch = this.dispatch
-    if(!ipc.listeners('screens-removed').length) {
-      ipc.on('screens-removed', (event) => {
+    if (!ipc.listeners('screens-removed').length) {
+      ipc.on('screens-removed', () => {
         dispatch('getScreenshots')
       })
     }
-  }
-}
-
-const map = {
-  screenShotFoundEventExists: () => ipc.listeners('screenshots-found').length,
-  screenShotRemovedEventExists: () => ipc.listeners('screens-removed').length
-}
-
-function getScreenShotData(commit) {
-  const screenShotEventPresent = ipc.listeners('screenshots-found').length > 0 ? true : false
-  if(!ipc.listeners('screenshots-found').length) {
-    ipc.on('screenshots-found', (event, data) => {
-      const updateScreenShotNotFoundBool = data.screenShots.length === 0 ? true : false
-      commit(types.CHANGE_SCREENSHOT_NOT_FOUND_TEXT, {
-        showScreenshotNotFoundText: updateScreenShotNotFoundBool
-      })
-      commit(types.ADD_IMAGES, { images: data.screenShots })
-      commit(types.ADD_NUMBER_OF_SCREENSHOTS, {numberOfScreenShots: data.numberOfScreenShots})
-      commit(types.ADD_SIZE_OF_SCREENSHOTS, {sizeOfScreenShots: data.sizeOfScreenShots})
-    })
   }
 }
 
@@ -140,7 +136,7 @@ const getters = {
   markAllAsDeleteText: state => state.markAllAsDeleteText,
   numberOfScreenShots: state => state.numberOfScreenShots,
   sizeOfScreenShots: state => state.sizeOfScreenShots,
-  imgsToDelete: state => {
+  imgsToDelete: (state) => {
     return state.images.filter(img => img.delete === true)
   }
 }
