@@ -8,8 +8,10 @@ const os = require('os')
 const fs = require('fs')
 const {ipcMain} = require('electron')
 const bytes = require('bytes')
-const deleteScreens = require('./delete-screens')
 
+function deleteScreens(screens) {
+  screens.forEach(s => fs.unlinkSync(s.img))
+}
 let mainWindow = null
 
 let screenShotInFName = (fname) => {
@@ -62,6 +64,7 @@ app.on('ready', () => {
   mainWindow.on('closed', () => {
     mainWindow = null
   })
+  mainWindow.webContents.openDevTools()
 })
 
 function setIcon(platform) {

@@ -1,4 +1,7 @@
-const webpack = require('webpack')
+var webpack = require('webpack')
+var webpackTargetElectronRenderer = require('webpack-target-electron-renderer');
+var path = require('path');
+var APP_DIR = path.resolve(__dirname, 'build');
 
 module.exports = {
     entry: [
@@ -6,10 +9,19 @@ module.exports = {
       './app/entry.js',
     ],
     output: {
-      path: __dirname + '/build',
-      publicPath: 'build/',
+      path: APP_DIR,
       filename: 'bundle.js'
     },
+    node: {
+      __dirname: false,
+      __filename: false
+    },
+    resolve: {
+      alias: {},
+      modules: [
+       'node_modules', './app',
+      ]
+    }
     target: "electron-main",
     module: {
       rules: [
@@ -44,3 +56,7 @@ module.exports = {
       ]
     }
 }
+
+config.target = webpackTargetElectronRenderer(config)
+
+module.exports = config
