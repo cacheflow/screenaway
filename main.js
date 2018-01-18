@@ -55,10 +55,7 @@ app.on('ready', () => {
     width: 800,
     title: 'Screenaway',
     frame: true,
-    icon: setIcon(os.platform()),
-    webPreferences: {
-      devTools: false
-    }
+    icon: setIcon(os.platform())
   })
   mainWindow.loadURL(`file://${path.join(__dirname, 'index.html')}`)
   mainWindow.on('closed', () => {
