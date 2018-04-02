@@ -1,5 +1,4 @@
 var webpack = require('webpack')
-var webpackTargetElectronRenderer = require('webpack-target-electron-renderer');
 var path = require('path');
 var APP_DIR = path.resolve(__dirname, 'build');
 
@@ -21,7 +20,7 @@ module.exports = {
       modules: [
        'node_modules', './app',
       ]
-    }
+    },
     target: "electron-main",
     module: {
       rules: [
@@ -56,7 +55,3 @@ module.exports = {
       ]
     }
 }
-
-config.target = webpackTargetElectronRenderer(config)
-
-module.exports = config

@@ -61,7 +61,6 @@ app.on('ready', () => {
   mainWindow.on('closed', () => {
     mainWindow = null
   })
-  mainWindow.webContents.openDevTools()
 })
 
 function setIcon(platform) {

@@ -19,7 +19,7 @@ const state = {
 function getScreenShotData(commit) {
   if (!ipc.listeners('screenshots-found').length) {
     ipc.on('screenshots-found', (event, data) => {
-      const updateScreenShotNotFoundBool = data.screenShots.length === 0 ? true : false
+      const updateScreenShotNotFoundBool = data.screenShots.length === 0;
       commit(types.CHANGE_SCREENSHOT_NOT_FOUND_TEXT, {
         showScreenshotNotFoundText: updateScreenShotNotFoundBool
       })
